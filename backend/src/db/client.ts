@@ -27,7 +27,6 @@ export function getSupabase(): SupabaseClient {
   }
   return supabase;
 }
-
 // Type definitions for database tables
 export interface Database {
   public: {

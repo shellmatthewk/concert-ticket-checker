@@ -43,8 +43,13 @@ export interface EventWithHistory extends Event {
 }
 
 class EventService {
-  async search(filters: SearchEventsRequest): Promise<Event[]> {
-    logger.debug({ filters }, 'Searching events');
+  async search(filters: SearchEventsRequest = { radius: 50, limit: 20, offset: 0 }): Promise<Event[]> {
+    const safeFilters = {
+      ...filters,
+      limit: filters?.limit ?? 20,
+      offset: filters?.offset ?? 0,
+    };
+    logger.debug({ filters: safeFilters }, 'Searching events');
 
     const supabase = getSupabase();
     let query = supabase
@@ -53,28 +58,27 @@ class EventService {
         *,
         venue:venues(id, name, city, state)
       `)
-      .eq('status', 'active')
-      .gte('event_date', new Date().toISOString());
+      .eq('status', 'active');
 
-    if (filters.query) {
-      query = query.ilike('artist_name', `%${filters.query}%`);
+    if (safeFilters.query) {
+      query = query.ilike('artist_name', `%${safeFilters.query}%`);
     }
 
-    if (filters.genre) {
-      query = query.ilike('genre', `%${filters.genre}%`);
+    if (safeFilters.genre) {
+      query = query.ilike('genre', `%${safeFilters.genre}%`);
     }
 
-    if (filters.dateFrom) {
-      query = query.gte('event_date', filters.dateFrom);
+    if (safeFilters.dateFrom) {
+      query = query.gte('event_date', safeFilters.dateFrom);
     }
 
-    if (filters.dateTo) {
-      query = query.lte('event_date', filters.dateTo);
+    if (safeFilters.dateTo) {
+      query = query.lte('event_date', safeFilters.dateTo);
     }
 
     const { data, error } = await query
       .order('event_date', { ascending: true })
-      .range(filters.offset, filters.offset + filters.limit - 1);
+      .range(safeFilters.offset, safeFilters.offset + safeFilters.limit - 1);
 
     if (error) {
       logger.error({ error }, 'Failed to search events');

@@ -10,6 +10,7 @@ import healthRouter from './api/routes/health.js';
 import eventsRouter from './api/routes/events.js';
 import venuesRouter from './api/routes/venues.js';
 import artistsRouter from './api/routes/artists.js';
+import adminRouter from './api/routes/admin.js';
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use('/api/health', healthRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/venues', venuesRouter);
 app.use('/api/artists', artistsRouter);
+app.use('/api/admin', adminRouter);
 
 // 404 handler
 app.use((_req, res) => {
